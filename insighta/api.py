@@ -3,7 +3,8 @@ import sys
 from rich.console import Console
 from insighta.storage import load_tokens, save_tokens, clear_tokens
 
-BASE_URL = "http://127.0.0.1:8000"
+from insighta.config import BASE_URL
+
 console = Console()
 
 def get_headers(endpoint: str):
