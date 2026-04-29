@@ -9,6 +9,8 @@ from urllib.parse import urlparse, parse_qs, urlencode
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from threading import Thread
 from rich.console import Console
+from insighta.api import request
+from insighta.config import BASE_URL, CLI_BASE_URL
 
 from insighta.storage import save_tokens, clear_tokens, load_tokens
 
@@ -63,7 +65,7 @@ def login():
             "code_challenge": code_challenge,
             "redirect_uri": "http://localhost:9000/callback"
         })
-        auth_url = f"http://127.0.0.1:8000/auth/github?{params}"
+        auth_url = f"{BASE_URL}/auth/github?{params}"
 
     console.print("[bold green]Opening browser for authentication...[/bold green]")
     webbrowser.open(auth_url)
@@ -80,12 +82,12 @@ def login():
 
     with console.status("[cyan]Exchanging token with backend...[/cyan]"):
         res = requests.post(
-            "http://127.0.0.1:8000/auth/github/token",
+            f"{BASE_URL}/auth/github/token",
             json={
                 "code": code,
                 "code_verifier": code_verifier,
                 "state": state,
-                "redirect_uri": "http://localhost:9000/callback"
+                "redirect_uri": f'{CLI_BASE_URL}/callback'
             }
         )
 
@@ -104,7 +106,7 @@ def logout():
         with console.status("[cyan]Invalidating session securely...[/cyan]"):
             try:
                 requests.post(
-                    "http://127.0.0.1:8000/auth/logout", 
+                    f"{BASE_URL}/auth/logout", 
                     json={"refresh_token": data["refresh_token"]}
                 )
             except Exception:
@@ -113,10 +115,11 @@ def logout():
     clear_tokens()
     console.print("[bold green]✔ Logged out successfully.[/bold green]")
 
+
 @app.command()
 def whoami():
-    data = load_tokens()
-    if not data or "user" not in data:
-        console.print("[bold yellow]Not logged in. Run `insighta login`.[/bold yellow]")
-        return
-    console.print(f"[bold green]Logged in as @{data['user']['username']} ({data['user']['role']})[/bold green]")
+    with console.status(f"[cyan]Returning User Info[/cyan]"):
+        res = request("GET", "/auth/me")
+        data = res.json().get("data", {})
+    
+    console.print(f"[bold green]{data}[/bold green]")
