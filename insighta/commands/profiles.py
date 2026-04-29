@@ -32,7 +32,7 @@ def print_table(data_list):
 @app.command("list")
 def list_profiles(
     gender: str = typer.Option(None, "--gender", help="Filter by gender (male/female)"),
-    country: str = typer.Option(None, "--country", help="Filter by country ID (e.g. US, NG)"),
+    country_id: str = typer.Option(None, "--country", help="Filter by country ID (e.g. US, NG)"),
     age_group: str = typer.Option(None, "--age-group", help="Filter by age group"),
     min_age: int = typer.Option(None, "--min-age", help="Minimum age limit"),
     max_age: int = typer.Option(None, "--max-age", help="Maximum age limit"),
